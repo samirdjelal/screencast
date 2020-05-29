@@ -1,0 +1,39 @@
+
+.App {
+	height: 100%;
+
+	.Header {
+		user-select: none;
+		background: linear-gradient(180deg, #37445a, #283140);
+
+		.Menu {
+			//background-color: red;
+		}
+
+		.Title {
+			-webkit-app-region: drag;
+			text-align: center;
+		}
+
+	}
+
+	.Main {
+		position: relative;
+		min-height: calc(100% - 40px);
+		//background-color: red;
+		.List {
+			padding: 20px;
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: calc(100% - 10px);
+		}
+	}
+
+	#videoStream {
+		width: 100%;
+		height: 370px;
+		display: block;
+	}
+}

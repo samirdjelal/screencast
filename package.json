@@ -1,0 +1,107 @@
+{
+	"name": "screencast",
+	"description": "Screen Recorder and Compressor",
+	"author": "Samir Djelal <samir.djelal.webdesign@gmail.com>",
+	"url": "https://samirdjelal.com",
+	"version": "0.1.0",
+	"private": true,
+	"main": "public/electron.js",
+	"license": "MIT",
+	"homepage": "./",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/SamirDjelal/screencast.git"
+	},
+	"keywords": [
+		"app",
+		"react",
+		"electron"
+	],
+	"dependencies": {
+		"electron-is-dev": "^1.2.0",
+		"electron-updater": "^4.3.1",
+		"electron-log": "^4.1.1"
+	},
+	"devDependencies": {
+		"@reduxjs/toolkit": "^1.3.5",
+		"axios": "^0.19.2",
+		"concurrently": "^5.1.0",
+		"cross-env": "^7.0.2",
+		"electron": "^8.2.3",
+		"electron-devtools-installer": "^3.0.0",
+		"javascript-obfuscator": "^0.27.4",
+		"node-sass": "^4.13.1",
+		"react": "^16.13.1",
+		"react-dom": "^16.13.1",
+		"react-redux": "^7.2.0",
+		"react-router": "^5.1.2",
+		"react-router-dom": "^5.1.2",
+		"react-scripts": "3.4.1",
+		"tailwindcss": "^1.4.6",
+		"wait-on": "^4.0.2"
+	},
+	"scripts": {
+		"dev": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://localhost:3000 && electron .\"",
+		"start": "react-scripts start",
+		"build:tailwind": "tailwindcss build src/assets/styles/tailwind.scss -o src/assets/styles/tailwind.generated.scss",
+		"build": "react-scripts build && javascript-obfuscator build/electron.js --output build/electron.js --compact true --self-defending true",
+		"release-windows-x32": "electron-builder --windows --ia32 -c.extraMetadata.main=build/electron.js",
+		"release-windows-x64": "electron-builder --windows --x64 -c.extraMetadata.main=build/electron.js",
+		"release-macos": "electron-builder --macos -c.extraMetadata.main=build/electron.js -c.mac.identity=null",
+		"release-linux": "electron-builder --linux -c.extraMetadata.main=build/electron.js",
+		"pack-windows-32bit-portable": "electron-builder --windows portable --ia32 -c.extraMetadata.main=build/electron.js",
+		"pack-windows-64bit-portable": "electron-builder --windows portable --x64 -c.extraMetadata.main=build/electron.js",
+		"pack-macos-dmg": "electron-builder --macos dmg -c.extraMetadata.main=build/electron.js -c.mac.identity=null",
+		"pack-macos-zip": "electron-builder --macos zip -c.extraMetadata.main=build/electron.js -c.mac.identity=null",
+		"pack-linux-deb": "electron-builder --linux deb -c.extraMetadata.main=build/electron.js",
+		"pack-linux-appimage": "electron-builder --linux AppImage -c.extraMetadata.main=build/electron.js"
+	},
+	"eslintConfig": {
+		"extends": "react-app"
+	},
+	"browserslist": {
+		"production": [
+			">0.2%",
+			"not dead",
+			"not op_mini all"
+		],
+		"development": [
+			"last 1 chrome version",
+			"last 1 firefox version",
+			"last 1 safari version"
+		]
+	},
+	"build": {
+		"productName": "Screencast",
+		"appId": "com.samirdjelal.screencast",
+		"files": [
+			"build/**/*",
+			"node_modules/**/*"
+		],
+		"directories": {
+			"buildResources": "build"
+		},
+		"copyright": "Copyright © 2020 Samir Djelal",
+		"mac": {
+			"icon": "./build/icons/app.icns",
+			"category": "public.app-category.utilities",
+			"target": [
+				"zip",
+				"dmg"
+			]
+		},
+		"win": {
+			"icon": "./build/icons/app.png"
+		},
+		"nsis": {
+			"perMachine": true
+		},
+		"publish": [
+			{
+				"provider": "generic",
+				"channel": "latest",
+				"url": "http://127.0.0.1/releases"
+			}
+		]
+	}
+}
