@@ -1,5 +1,5 @@
-## Reactron
+## Screencast
 
 Simple Screen Recorder and Compressor.
 
-![Screencast Interface](screenshot.png)
+![Screencast Interface](screenshot.jpg)
