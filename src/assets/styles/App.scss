@@ -28,6 +28,8 @@
 			left: 0;
 			width: 100%;
 			height: calc(100% - 10px);
+			-webkit-backdrop-filter: saturate(180%) blur(20px);
+			backdrop-filter: saturate(180%) blur(20px);
 		}
 	}
 

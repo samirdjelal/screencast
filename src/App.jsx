@@ -8,8 +8,8 @@ import Recorder from "./screens/Recorder";
 import Compressor from "./screens/Compressor";
 import Header from "./components/Header";
 
-// const {dialog} = require('electron').remote
-// const {writeFile} = require('fs');
+const {dialog} = window.require('electron').remote
+const {writeFile} = window.require('fs');
 
 let videoElement;
 let mediaRecorder; // MediaRecorder instance to capture footage
@@ -20,7 +20,8 @@ class App extends Component {
 		super(props);
 		this.state = {
 			sources: [],
-			source: null
+			source: null,
+			openSoucesList: false
 		}
 		this.openSettings = this.openSettings.bind(this);
 		this.startRecording = this.startRecording.bind(this);
@@ -54,15 +55,15 @@ class App extends Component {
 						{/*	<button onClick={this.startRecording} className="py-1 rounded px-3 bg-gray-300 text-gray-900 focus:outline-none focus:shadow-outline">start</button>*/}
 						{/*	<button onClick={this.stopRecording} className="py-1 rounded px-3 bg-gray-300 text-gray-900 focus:outline-none focus:shadow-outline">stop</button>*/}
 						{/*</div>*/}
-						<div className="List">
-							{(this.state.sources && this.state.source === null) && <div className="h-full">
+						{this.state.openSoucesList && <div className="h-full overflow-y-scroll">
+							<div className="List">
 								<ul>
 									{this.state.sources.map(source => (
 										<li key={source.id} onClick={() => this.setVideoSource(source)}>{source.name}</li>
 									))}
 								</ul>
-							</div>}
-						</div>
+							</div>
+						</div>}
 					</div>
 				</div>
 			</Fragment>
@@ -74,16 +75,21 @@ class App extends Component {
 	}
 	
 	async startRecording() {
+		console.log(mediaRecorder.state)
 		console.log('startRecording');
-		if (typeof mediaRecorder !== 'undefined') mediaRecorder.start();
-
+		if (typeof mediaRecorder !== 'undefined' && mediaRecorder.state === 'inactive') mediaRecorder.start();
+		
 	}
 	
 	async stopRecording() {
-		
+		console.log(mediaRecorder.state)
 		if (typeof mediaRecorder !== 'undefined' && mediaRecorder.state === 'recording') {
+			// videoElement.stop();
+			// if (typeof videoElement.stop === 'function') videoElement.stop();
+			// videoElement.srcObject = null;
 			mediaRecorder.stop();
 		}
+		
 		// mediaRecorder.stop();
 		// if (typeof mediaRecorder !== 'undefined') console.log(mediaRecorder);
 		console.log('stopRecording');
@@ -91,27 +97,33 @@ class App extends Component {
 	}
 	
 	async setVideoSource(source) {
-		this.setState({source: source});
+		this.setState({source: source, openSoucesList: false});
 		
-		const constraints = {
-			audio: false,
-			video: {
-				mandatory: {
-					chromeMediaSource: 'desktop',
-					chromeMediaSourceId: source.id
-				}
-			}
-		};
 		// Create a Stream
 		const stream = await navigator.mediaDevices
-			.getUserMedia(constraints);
+			.getUserMedia({
+				audio: {
+					mandatory: {
+						chromeMediaSource: 'desktop',
+						chromeMediaSourceId: source.id
+					}
+				},
+				video: {
+					mandatory: {
+						chromeMediaSource: 'desktop',
+						chromeMediaSourceId: source.id
+					}
+				}
+			});
 		
 		// Preview the source in a video element
+		videoElement.volume = 0;
 		videoElement.srcObject = stream;
 		videoElement.play();
 		
 		// Create the Media Recorder
 		const options = {mimeType: 'video/webm; codecs=vp9'};
+		// const options = {mimeType: 'video/mp4; codecs=H.264'};
 		mediaRecorder = new MediaRecorder(stream, options);
 		
 		// Register Event Handlers
@@ -121,11 +133,16 @@ class App extends Component {
 	}
 	
 	async getVideoSources() {
-		this.setState({sources: [], source: null});
-		const inputSources = await window.desktopCapturer.getSources({
-			types: ['window', 'screen']
-		});
-		this.setState({sources: inputSources});
+		// if (typeof videoElement.stop === 'function') videoElement.stop();
+		// if (this.state.sources.length === 0 && this.state.source === null) {
+		if (this.state.openSoucesList === true) {
+			this.setState({openSoucesList: false});
+		} else {
+			const inputSources = await window.desktopCapturer.getSources({
+				types: ['window', 'screen']
+			});
+			this.setState({openSoucesList: true, sources: inputSources, source: null});
+		}
 	}
 	
 	
@@ -139,18 +156,18 @@ class App extends Component {
 	async handleStop(e) {
 		const blob = new Blob(recordedChunks, {
 			type: 'video/webm; codecs=vp9'
+			// type: 'video/mp4; codecs=H.264'
 		});
 		
 		const buffer = Buffer.from(await blob.arrayBuffer());
 		console.log(buffer);
-		// const {filePath} = await dialog.showSaveDialog({
-		// 	buttonLabel: 'Save video',
-		// 	defaultPath: `vid-${Date.now()}.webm`
-		// });
+		const {filePath} = await dialog.showSaveDialog({
+			buttonLabel: 'Save video',
+			defaultPath: `vid-${Date.now()}.webm`
+		});
 		//
 		// console.log(filePath);
-		
-		// writeFile(filePath, buffer, () => console.log('video saved successfully!'));
+		writeFile(filePath, buffer, () => console.log('video saved successfully!'));
 	}
 
 
