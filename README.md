@@ -2,4 +2,4 @@
 
 Simple Screen Recorder and Compressor.
 
-![Screencast Interface](screenshot.jpg)
+![Screencast Interface](screenshot.png)
