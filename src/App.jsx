@@ -21,7 +21,8 @@ class App extends Component {
 		this.state = {
 			sources: [],
 			source: null,
-			openSoucesList: false
+			openSoucesList: false,
+			status: 'idle'
 		}
 		this.openSettings = this.openSettings.bind(this);
 		this.startRecording = this.startRecording.bind(this);
@@ -40,6 +41,7 @@ class App extends Component {
 			<Fragment>
 				<div className="App">
 					<Header
+						status={this.state.status}
 						openSettings={this.openSettings}
 						getVideoSources={this.getVideoSources}
 						startRecording={this.startRecording}
@@ -55,13 +57,14 @@ class App extends Component {
 						{/*	<button onClick={this.startRecording} className="py-1 rounded px-3 bg-gray-300 text-gray-900 focus:outline-none focus:shadow-outline">start</button>*/}
 						{/*	<button onClick={this.stopRecording} className="py-1 rounded px-3 bg-gray-300 text-gray-900 focus:outline-none focus:shadow-outline">stop</button>*/}
 						{/*</div>*/}
-						{this.state.openSoucesList && <div className="h-full overflow-y-scroll">
-							<div className="List">
-								<ul>
-									{this.state.sources.map(source => (
-										<li key={source.id} onClick={() => this.setVideoSource(source)}>{source.name}</li>
-									))}
-								</ul>
+						{this.state.openSoucesList && <div className="List">
+							<div className="ListItems h-full overflow-y-scroll">
+								{this.state.sources.map(source => (
+									<div className="Item mb-4 flex" key={source.id} onClick={() => this.setVideoSource(source)}>
+										<img className="rounded w-12 h-10 object-contain bg-gray-900" src={source.thumbnail.toDataURL()} alt={source.name}/>
+										<div className="pt-2 pl-4">{source.name}</div>
+									</div>
+								))}
 							</div>
 						</div>}
 					</div>
@@ -77,12 +80,15 @@ class App extends Component {
 	async startRecording() {
 		console.log(mediaRecorder.state)
 		console.log('startRecording');
+		this.setState({status: 'recording'});
+		
 		if (typeof mediaRecorder !== 'undefined' && mediaRecorder.state === 'inactive') mediaRecorder.start();
 		
 	}
 	
 	async stopRecording() {
 		console.log(mediaRecorder.state)
+		this.setState({status: 'idle'});
 		if (typeof mediaRecorder !== 'undefined' && mediaRecorder.state === 'recording') {
 			// videoElement.stop();
 			// if (typeof videoElement.stop === 'function') videoElement.stop();
@@ -142,6 +148,7 @@ class App extends Component {
 				types: ['window', 'screen']
 			});
 			this.setState({openSoucesList: true, sources: inputSources, source: null});
+			// console.log(inputSources[0].thumbnail.toDataURL())
 		}
 	}
 	
@@ -158,9 +165,8 @@ class App extends Component {
 			type: 'video/webm; codecs=vp9'
 			// type: 'video/mp4; codecs=H.264'
 		});
-		
 		const buffer = Buffer.from(await blob.arrayBuffer());
-		console.log(buffer);
+		// console.log(buffer);
 		const {filePath} = await dialog.showSaveDialog({
 			buttonLabel: 'Save video',
 			defaultPath: `vid-${Date.now()}.webm`

@@ -5,13 +5,26 @@
 	.Header {
 		user-select: none;
 		background: linear-gradient(180deg, #37445a, #283140);
+		-webkit-app-region: drag;
 
 		.Menu {
 			//background-color: red;
+			.Item {
+				-webkit-app-region: no-drag;
+			}
+
+		}
+
+		.minimize-btn {
+			-webkit-app-region: no-drag;
+		}
+
+		.close-btn {
+			-webkit-app-region: no-drag;
 		}
 
 		.Title {
-			-webkit-app-region: drag;
+
 			text-align: center;
 		}
 
@@ -28,8 +41,28 @@
 			left: 0;
 			width: 100%;
 			height: calc(100% - 10px);
-			-webkit-backdrop-filter: saturate(180%) blur(20px);
-			backdrop-filter: saturate(180%) blur(20px);
+			-webkit-backdrop-filter: saturate(180%) blur(3px);
+			backdrop-filter: saturate(180%) blur(3px);
+			background: rgba(0, 0, 0, 0.5);
+			.ListItems {
+				.Item {
+					font-size: 14px;
+					cursor: pointer;
+				}
+
+				&::-webkit-scrollbar-track {
+					background-color: #2E354C;
+				}
+
+				&::-webkit-scrollbar {
+					width: 7px;
+				}
+
+				&::-webkit-scrollbar-thumb {
+					background-color: #FCD770;
+				}
+			}
+
 		}
 	}
 
