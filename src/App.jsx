@@ -50,7 +50,7 @@ class App extends Component {
 					
 					<div className="Main">
 						
-						<video id="videoStream" className="App bg-gray-900 mb-4"/>
+						<video id="videoStream" className="App mb-4"/>
 						
 						{/*<div className="px-3 space-x-3">*/}
 						{/*	<button onClick={this.getVideoSources} className="py-1 rounded px-3 bg-gray-300 text-gray-900 focus:outline-none focus:shadow-outline">get sources</button>*/}
