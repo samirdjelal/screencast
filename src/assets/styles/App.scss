@@ -1,7 +1,21 @@
+@keyframes redDotAnimation {
+	0% {
+		opacity: 0;
+	}
+	30% {
+		opacity: 100%;
+	}
+	60% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 0;
+	}
+}
 
 .App {
 	height: 100%;
-
+	font-size: 14px;
 	.Header {
 		user-select: none;
 		background: linear-gradient(180deg, #37445a, #283140);
@@ -24,8 +38,23 @@
 		}
 
 		.Title {
-
+			text-shadow: 2px 2px 1px #1a202ca1;
 			text-align: center;
+			position: relative;
+
+			.redDot {
+				position: absolute;
+				border-radius: 50%;
+				top: 15px;
+				left: 10px;
+				width: 12px;
+				height: 12px;
+				background-color: red;
+				border: 1px solid #000;
+				animation-name: redDotAnimation;
+				animation-duration: 1.2s;
+				animation-iteration-count: infinite;
+			}
 		}
 
 	}
@@ -34,6 +63,15 @@
 		position: relative;
 		min-height: calc(100% - 40px);
 		//background-color: red;
+		.Compressor {
+			padding: 20px;
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: calc(100% - 10px);
+		}
+
 		.List {
 			padding: 20px;
 			position: absolute;
@@ -41,14 +79,31 @@
 			left: 0;
 			width: 100%;
 			height: calc(100% - 10px);
-			-webkit-backdrop-filter: saturate(180%) blur(3px);
-			backdrop-filter: saturate(180%) blur(3px);
+			//-webkit-backdrop-filter: saturate(180%) blur(3px);
+			//backdrop-filter: saturate(180%) blur(3px);
+
 			//background: rgba(0, 0, 0, 0.5);
-			background: rgba(137, 158, 169, 0.5);
+			//background: rgba(137, 158, 169, 0.5);
+			//background-color: #2d3748;
+			//background-color: rgba(45, 55, 72, var(--bg-opacity));
+
 			.ListItems {
 				.Item {
 					font-size: 14px;
 					cursor: pointer;
+					text-shadow: 2px 2px 1px #1a202c8f;
+					color: #e2e7ec;
+					padding: 10px;
+
+					&:hover {
+						//color: #fff;
+						color: #FCD770;
+						//background: #222a38;
+					}
+
+					img {
+						border: 2px solid #a0aec0;
+					}
 				}
 
 				&::-webkit-scrollbar-track {

@@ -1,34 +1,27 @@
 import React, {Component, Fragment} from 'react';
-import {Switch, Route, Redirect} from 'react-router-dom';
-import {connect} from 'react-redux';
 import './assets/styles/App.scss';
-import {withRouter} from "react-router";
-import Home from "./screens/Home";
-import Recorder from "./screens/Recorder";
-import Compressor from "./screens/Compressor";
 import Header from "./components/Header";
 
 const {dialog} = window.require('electron').remote
 const {writeFile} = window.require('fs');
 
-let videoElement;
-let mediaRecorder; // MediaRecorder instance to capture footage
-const recordedChunks = [];
+let videoElement, mediaRecorder, recordedChunks = [];
 
-class App extends Component {
+export default class App extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
 			sources: [],
 			source: null,
 			openSoucesList: false,
+			openCompressor: false,
 			status: 'idle'
 		}
-		this.openSettings = this.openSettings.bind(this);
 		this.startRecording = this.startRecording.bind(this);
 		this.stopRecording = this.stopRecording.bind(this);
 		this.setVideoSource = this.setVideoSource.bind(this);
 		this.getVideoSources = this.getVideoSources.bind(this);
+		this.openCompressor = this.openCompressor.bind(this);
 	}
 	
 	componentDidMount() {
@@ -36,7 +29,6 @@ class App extends Component {
 	}
 	
 	render() {
-		
 		return (
 			<Fragment>
 				<div className="App">
@@ -46,6 +38,7 @@ class App extends Component {
 						getVideoSources={this.getVideoSources}
 						startRecording={this.startRecording}
 						stopRecording={this.stopRecording}
+						openCompressor={this.openCompressor}
 					/>
 					
 					<div className="Main">
@@ -57,7 +50,13 @@ class App extends Component {
 						{/*	<button onClick={this.startRecording} className="py-1 rounded px-3 bg-gray-300 text-gray-900 focus:outline-none focus:shadow-outline">start</button>*/}
 						{/*	<button onClick={this.stopRecording} className="py-1 rounded px-3 bg-gray-300 text-gray-900 focus:outline-none focus:shadow-outline">stop</button>*/}
 						{/*</div>*/}
-						{this.state.openSoucesList && <div className="List">
+						
+						
+						{this.state.openCompressor && <div className="Compressor bg-gray-800">
+							openCompressor
+						</div>}
+						
+						{this.state.openSoucesList && <div className="List bg-gray-800">
 							<div className="ListItems h-full overflow-y-scroll">
 								{this.state.sources.map(source => (
 									<div className="Item mb-4 flex" key={source.id} onClick={() => this.setVideoSource(source)}>
@@ -67,45 +66,36 @@ class App extends Component {
 								))}
 							</div>
 						</div>}
+					
+					
 					</div>
 				</div>
 			</Fragment>
 		);
 	}
 	
-	openSettings() {
-		console.log('openSettings');
+	openCompressor() {
+		this.setState(prevState => ({openCompressor: !prevState.openCompressor, openSoucesList: false}));
 	}
 	
 	async startRecording() {
-		console.log(mediaRecorder.state)
 		console.log('startRecording');
-		this.setState({status: 'recording'});
-		
-		if (typeof mediaRecorder !== 'undefined' && mediaRecorder.state === 'inactive') mediaRecorder.start();
-		
+		if (typeof mediaRecorder !== 'undefined' && mediaRecorder.state === 'inactive') {
+			mediaRecorder.start();
+			this.setState({status: 'recording'});
+		}
 	}
 	
 	async stopRecording() {
-		console.log(mediaRecorder.state)
+		console.log('stopRecording');
 		this.setState({status: 'idle'});
 		if (typeof mediaRecorder !== 'undefined' && mediaRecorder.state === 'recording') {
-			// videoElement.stop();
-			// if (typeof videoElement.stop === 'function') videoElement.stop();
-			// videoElement.srcObject = null;
 			mediaRecorder.stop();
 		}
-		
-		// mediaRecorder.stop();
-		// if (typeof mediaRecorder !== 'undefined') console.log(mediaRecorder);
-		console.log('stopRecording');
-		
 	}
 	
 	async setVideoSource(source) {
-		this.setState({source: source, openSoucesList: false});
-		
-		// Create a Stream
+		this.setState({source: source, openSoucesList: false, openCompressor: false});
 		const stream = await navigator.mediaDevices
 			.getUserMedia({
 				audio: {
@@ -122,78 +112,40 @@ class App extends Component {
 				}
 			});
 		
-		// Preview the source in a video element
 		videoElement.volume = 0;
 		videoElement.srcObject = stream;
 		videoElement.play();
 		
-		// Create the Media Recorder
 		const options = {mimeType: 'video/webm; codecs=vp9'};
-		// const options = {mimeType: 'video/mp4; codecs=H.264'};
 		mediaRecorder = new MediaRecorder(stream, options);
 		
-		// Register Event Handlers
-		mediaRecorder.ondataavailable = this.handleDataAvailable;
-		mediaRecorder.onstop = this.handleStop;
+		mediaRecorder.ondataavailable = async (e) => {
+			console.log('video data available');
+			recordedChunks.push(e.data);
+		}
+		
+		mediaRecorder.onstop = async (e) => {
+			const blob = new Blob(recordedChunks, {type: 'video/webm; codecs=vp9'});
+			const buffer = Buffer.from(await blob.arrayBuffer());
+			const {filePath} = await dialog.showSaveDialog({
+				buttonLabel: 'Save video',
+				defaultPath: `vid-${Date.now()}.webm`
+			});
+			//
+			writeFile(filePath, buffer, () => console.log('video saved successfully!'));
+		};
 		
 	}
 	
 	async getVideoSources() {
-		// if (typeof videoElement.stop === 'function') videoElement.stop();
-		// if (this.state.sources.length === 0 && this.state.source === null) {
 		if (this.state.openSoucesList === true) {
-			this.setState({openSoucesList: false});
+			this.setState({openSoucesList: false, openCompressor: false});
 		} else {
-			const inputSources = await window.desktopCapturer.getSources({
-				types: ['window', 'screen']
-			});
-			this.setState({openSoucesList: true, sources: inputSources, source: null});
-			// console.log(inputSources[0].thumbnail.toDataURL())
+			const inputSources = await window.desktopCapturer.getSources({types: ['window', 'screen']});
+			this.setState({openSoucesList: true, sources: inputSources, source: null, openCompressor: false});
 		}
 	}
 	
 	
-	// Captures all recorded chunks
-	handleDataAvailable(e) {
-		console.log('video data available');
-		recordedChunks.push(e.data);
-	}
-
-// Saves the video file on stop
-	async handleStop(e) {
-		const blob = new Blob(recordedChunks, {
-			type: 'video/webm; codecs=vp9'
-			// type: 'video/mp4; codecs=H.264'
-		});
-		const buffer = Buffer.from(await blob.arrayBuffer());
-		// console.log(buffer);
-		const {filePath} = await dialog.showSaveDialog({
-			buttonLabel: 'Save video',
-			defaultPath: `vid-${Date.now()}.webm`
-		});
-		//
-		// console.log(filePath);
-		writeFile(filePath, buffer, () => console.log('video saved successfully!'));
-	}
-
-
-// const Main = () => {
-// 	return (
-// 		<div className="Main">
-// 			<Switch>
-// 				<Route path="/" component={Home} exact/>
-// 				<Route path="/recorder" component={Recorder} exact/>
-// 				<Route path="/compressor" component={Compressor} exact/>
-// 				<Redirect to="/"/>
-// 			</Switch>
-// 		</div>
-// 	);
 }
 
-export default withRouter(connect(
-	state => ({
-		app_name: state.app.name,
-		app_version: state.app.version
-	}),
-	{}
-)(App));
