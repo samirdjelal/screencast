@@ -29,7 +29,7 @@
 		"electron": "^11.5.0",
 		"electron-devtools-installer": "^3.0.0",
 		"javascript-obfuscator": "^0.27.4",
-		"node-sass": "^4.13.1",
+		"node-sass": "^7.0.0",
 		"react": "^16.13.1",
 		"react-dom": "^16.13.1",
 		"react-scripts": "3.4.1",
